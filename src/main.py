@@ -87,12 +87,12 @@ class vkMusicDownloader():
             os.chdir(music_path) #меняем текущую директорию
 
             audio = self.vk_audio.get(owner_id=self.user_id)
-            print('Будет скачано: {} аудиозаписей.'.format(len(self.vk_audio.get(owner_id=self.user_id))))
+            print('Будет скачано: {} аудиозаписей.'.format(len(audio)))
             time_start = time() # сохраняем время начала скачивания
             print("Скачивание началось...\n")
             index = 1
             # собственно циклом загружаем нашу музыку 
-            for i in self.vk_audio.get(owner_id=self.user_id):
+            for i in audio:
                 fileM = "{} - {}.mp3".format(i["artist"], i["title"])
                 try:
                     if os.path.isfile(fileM) :
@@ -110,7 +110,7 @@ class vkMusicDownloader():
                 
                 index += 1
             time_finish = time()
-            print("" + str(len(self.vk_audio.get(owner_id=self.user_id))) + " аудиозаписей скачано за: " + str(time_finish - time_start) + " сек.")
+            print("" + str(len(audio)) + " аудиозаписей скачано за: " + str(time_finish - time_start) + " сек.")
         except KeyboardInterrupt:
             print('Вы завершили выполнение программы.')
 
