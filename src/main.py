@@ -7,6 +7,7 @@ import requests
 from time import time
 import vk_api
 from vk_api import audio
+import re
 
 class vkMusicDownloader():
 
@@ -94,6 +95,7 @@ class vkMusicDownloader():
             # собственно циклом загружаем нашу музыку 
             for i in audio:
                 fileM = "{} - {}.mp3".format(i["artist"], i["title"])
+                fileM = re.sub('/', '_', fileM)
                 try:
                     if os.path.isfile(fileM) :
                         print("{} Уже скачен: {}.".format(index, fileM))
