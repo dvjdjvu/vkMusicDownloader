@@ -113,6 +113,7 @@ class vkMusicDownloader():
                 
                 index += 1
             
+            os.chdir("../..")
             print('У Вас {} альбома.'.format(len(albums)))
             for i in albums:
                 index = 1
@@ -121,6 +122,7 @@ class vkMusicDownloader():
                 print('Будет скачано: {} аудиозаписей из альбома {}.'.format(len(audio), i['title']))
                 
                 album_path = "{}/{}".format(music_path, i['title'])
+                print(album_path)
                 if not os.path.exists(album_path):
                     os.makedirs(album_path)
                     
@@ -144,7 +146,8 @@ class vkMusicDownloader():
                             print("{} Не удалось скачать аудиозапись: {}".format(index, fileM))
                 
                     index += 1
-                    
+                
+                os.chdir("../../..")
                 
             time_finish = time()
             print("" + str(len(audio)) + " аудиозаписей скачано за: " + str(time_finish - time_start) + " сек.")
