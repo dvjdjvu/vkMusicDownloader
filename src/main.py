@@ -88,7 +88,8 @@ class vkMusicDownloader():
             os.chdir(music_path) #меняем текущую директорию
 
             audio = self.vk_audio.get(owner_id=self.user_id)
-            print('Будет скачано: {} аудиозаписей.'.format(len(audio)))
+            albums = self.vk_audio.get_albums(owner_id=self.user_id)
+            print('Будет скачано: {} аудиозаписей с Вашей страницы.'.format(len(audio)))
             time_start = time() # сохраняем время начала скачивания
             print("Скачивание началось...\n")
             index = 1
@@ -111,6 +112,40 @@ class vkMusicDownloader():
                         print("{} Не удалось скачать аудиозапись: {}".format(index, fileM))
                 
                 index += 1
+            
+            print('У Вас {} альбома.'.format(len(albums)))
+            for i in albums:
+                index = 1
+                audio = self.vk_audio.get(owner_id=self.user_id, album_id=i['id'])
+                
+                print('Будет скачано: {} аудиозаписей из альбома {}.'.format(len(audio), i['title']))
+                
+                album_path = "{}/{}".format(music_path, i['title'])
+                if not os.path.exists(album_path):
+                    os.makedirs(album_path)
+                    
+                os.chdir(album_path) #меняем текущую директорию
+                
+                for j in audio:
+                    fileM = "{} - {}.mp3".format(j["artist"], j["title"])
+                    fileM = re.sub('/', '_', fileM)
+                    try:
+                        if os.path.isfile(fileM) :
+                            print("{} Уже скачен: {}.".format(index, fileM))
+                        else :
+                            print("{} Скачивается: {}.".format(index, fileM), end = "")
+                            r = requests.get(audio[index-1]["url"])
+                            if r.status_code == self.REQUEST_STATUS_CODE:
+                                print(' Скачивание завершено.')
+                                with open(fileM, 'wb') as output_file:
+                                    output_file.write(r.content)
+                    except OSError:
+                        if not os.path.isfile(fileM) :
+                            print("{} Не удалось скачать аудиозапись: {}".format(index, fileM))
+                
+                    index += 1
+                    
+                
             time_finish = time()
             print("" + str(len(audio)) + " аудиозаписей скачано за: " + str(time_finish - time_start) + " сек.")
         except KeyboardInterrupt:
