@@ -85,14 +85,14 @@ class vkMusicDownloader():
             if not os.path.exists(music_path):
                 os.makedirs(music_path)
             
-            os.chdir(music_path) #меняем текущую директорию
-
-            audio = self.vk_audio.get(owner_id=self.user_id)
-            albums = self.vk_audio.get_albums(owner_id=self.user_id)
-            print('Будет скачано: {} аудиозаписей с Вашей страницы.'.format(len(audio)))
+            index = 1
             time_start = time() # сохраняем время начала скачивания
             print("Скачивание началось...\n")
-            index = 1
+            
+            os.chdir(music_path) #меняем текущую директорию
+            audio = self.vk_audio.get(owner_id=self.user_id)
+            print('Будет скачано: {} аудиозаписей с Вашей страницы.'.format(len(audio)))
+            
             # собственно циклом загружаем нашу музыку 
             for i in audio:
                 fileM = "{} - {}.mp3".format(i["artist"], i["title"])
@@ -114,6 +114,7 @@ class vkMusicDownloader():
                 index += 1
             
             os.chdir("../..")
+            albums = self.vk_audio.get_albums(owner_id=self.user_id)
             print('У Вас {} альбома.'.format(len(albums)))
             for i in albums:
                 index = 1
