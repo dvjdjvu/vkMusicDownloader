@@ -2,6 +2,8 @@
 #-*- coding: utf-8 -*-
 
 import os
+import sys
+import getopt
 import pickle
 import requests
 from time import time
@@ -62,21 +64,25 @@ class vkMusicDownloader():
         except KeyboardInterrupt:
             print('Вы завершили выполнение программы.')
 
-    def main(self):
+    def main(self, auth_dialog = 'yes'):
         try:
             if (not os.path.exists(self.CONFIG_DIR)):
                 os.mkdir(self.CONFIG_DIR)
             if not os.path.exists(self.path):
                 os.makedirs(self.path)
-
-            auth_dialog = str(input("Авторизоваться заново? yes/no\n> "))
-            if (auth_dialog == "yes"):
-                self.auth(new=True)
-            elif (auth_dialog == "no"):
+            
+            if (auth_dialog == 'yes') :
+                auth_dialog = str(input("Авторизоваться заново? yes/no\n> "))
+                if (auth_dialog == "yes"):
+                    self.auth(new=True)
+                elif (auth_dialog == "no"):
+                    self.auth(new=False)
+                else:
+                    print('Ошибка, неверный ответ.')
+                    self.main()
+            elif (auth_dialog == 'no') :
                 self.auth(new=False)
-            else:
-                print('Ошибка, неверный ответ.')
-                self.main()
+            
             print('Подготовка к скачиванию...')
             
             # В папке music создаем папку с именем пользователя, которого скачиваем.
@@ -157,4 +163,21 @@ class vkMusicDownloader():
 
 if __name__ == '__main__':
     vkMD = vkMusicDownloader()
-    vkMD.main()
+
+    try:
+        opts, args = getopt.getopt(sys.argv, "hn")
+    except getopt.GetoptError:
+        print('./main.py [-n] [-h]')
+        sys.exit(2)
+    
+    if len(args) == 1 :
+        vkMD.main(auth_dialog = 'yes')
+    else :
+        for arg in args:    
+            if arg == '-h':
+                print('./main.py [-n] [-h]')
+                sys.exit()
+            elif arg == '-n':
+                vkMD.main(auth_dialog = 'no')
+
+
