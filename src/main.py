@@ -1,15 +1,14 @@
 #!/usr/bin/python3
 #-*- coding: utf-8 -*-
 
+import re
 import os
 import sys
 import getopt
 import pickle
-import requests
 from time import time
 import vk_api
 from vk_api import audio
-import re
 
 class vkMusicDownloader():
 
@@ -29,6 +28,12 @@ class vkMusicDownloader():
 
         with open(self.USERDATA_FILE, 'wb') as dataFile:
             pickle.dump(SaveData, dataFile)
+            
+    def progress(percentage, ffmpeg):
+        # You can update a field in your database
+        # You can also create a socket connection and show a progress bar to users
+        sys.stdout.write("\rTranscoding...(%s%%)[%s%s]" % (percentage, '#' * percentage, '-' * (100 - percentage)))
+        sys.stdout.flush()
 
     def auth(self, new=False):
         try:
@@ -101,22 +106,20 @@ class vkMusicDownloader():
             
             # собственно циклом загружаем нашу музыку 
             for i in audio:
-                fileM = "{} - {}.mp3".format(i["artist"], i["title"])
-                fileM = re.sub('/', '_', fileM)
-                try:
-                    if os.path.isfile(fileM) :
-                        print("{} Уже скачен: {}.".format(index, fileM))
-                    else :
-                        print("{} Скачивается: {}.".format(index, fileM), end = "")
-                        r = requests.get(audio[index-1]["url"])
-                        if r.status_code == self.REQUEST_STATUS_CODE:
-                            print(' Скачивание завершено.')
-                            with open(fileM, 'wb') as output_file:
-                                output_file.write(r.content)
-                except OSError:
-                    if not os.path.isfile(fileM) :
-                        print("{} Не удалось скачать аудиозапись: {}".format(index, fileM))
+                fileMP3 = "{} - {}.mp3".format(i["artist"], i["title"])
+                fileMP3 = re.sub('/', '_', fileMP3)
                 
+                try:
+                    if os.path.isfile(fileMP3) :
+                        print("{} Уже скачен: {}.".format(index, fileMP3))
+                    else :
+                        print("{} Скачивается: {}.".format(index, fileMP3), end = "\n")
+                    
+                        os.system("ffmpeg -i {} -c copy -map a \"{}\"".format(audio[index-1]['url'], fileMP3))
+                except OSError:
+                    if not os.path.isfile(fileMP3) :
+                        print("{} Не удалось скачать аудиозапись: {}".format(index, fileMP3))
+
                 index += 1
             
             os.chdir("../..")
@@ -136,21 +139,18 @@ class vkMusicDownloader():
                 os.chdir(album_path) #меняем текущую директорию
                 
                 for j in audio:
-                    fileM = "{} - {}.mp3".format(j["artist"], j["title"])
-                    fileM = re.sub('/', '_', fileM)
+                    fileMP3 = "{} - {}.mp3".format(j["artist"], j["title"])
+                    fileMP3 = re.sub('/', '_', fileMP3)
                     try:
-                        if os.path.isfile(fileM) :
-                            print("{} Уже скачен: {}.".format(index, fileM))
+                        if os.path.isfile(fileMP3) :
+                            print("{} Уже скачен: {}.".format(index, fileMP3))
                         else :
-                            print("{} Скачивается: {}.".format(index, fileM), end = "")
-                            r = requests.get(audio[index-1]["url"])
-                            if r.status_code == self.REQUEST_STATUS_CODE:
-                                print(' Скачивание завершено.')
-                                with open(fileM, 'wb') as output_file:
-                                    output_file.write(r.content)
+                            print("{} Скачивается: {}.".format(index, fileMP3), end = "")
+                            
+                            os.system("ffmpeg -i {} -c copy -map a \"{}\"".format(audio[index-1]['url'], fileMP3))
                     except OSError:
-                        if not os.path.isfile(fileM) :
-                            print("{} Не удалось скачать аудиозапись: {}".format(index, fileM))
+                        if not os.path.isfile(fileMP3) :
+                            print("{} Не удалось скачать аудиозапись: {}".format(index, fileMP3))
                 
                     index += 1
                 
