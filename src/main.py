@@ -28,12 +28,6 @@ class vkMusicDownloader():
 
         with open(self.USERDATA_FILE, 'wb') as dataFile:
             pickle.dump(SaveData, dataFile)
-            
-    def progress(percentage, ffmpeg):
-        # You can update a field in your database
-        # You can also create a socket connection and show a progress bar to users
-        sys.stdout.write("\rTranscoding...(%s%%)[%s%s]" % (percentage, '#' * percentage, '-' * (100 - percentage)))
-        sys.stdout.flush()
 
     def auth(self, new=False):
         try:
