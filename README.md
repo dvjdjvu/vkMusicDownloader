@@ -14,7 +14,7 @@
 ### Как использовать:
 
 ```bash
-apt get install ffmpeg
+apt-get install ffmpeg
 pip3 install -r requirements.txt
 ./src/main.py
 ```
