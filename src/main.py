@@ -29,7 +29,7 @@ class vkMusicDownloader():
         with open(self.USERDATA_FILE, 'wb') as dataFile:
             pickle.dump(SaveData, dataFile)
 
-    def auth(self, new=False):
+    def auth(self, new = False, user_id = None):
         try:
             if (os.path.exists(self.USERDATA_FILE) and new == False):
                 with open(self.USERDATA_FILE, 'rb') as DataFile:
@@ -37,7 +37,10 @@ class vkMusicDownloader():
 
                 self.login = LoadedData[0]
                 self.password = LoadedData[1]
-                self.user_id = LoadedData[2]
+                if user_id :
+                    self.user_id = user_id
+                else :
+                    self.user_id = LoadedData[2]
             else:
                 if (os.path.exists(self.USERDATA_FILE) and new == True):
                     os.remove(self.USERDATA_FILE)
@@ -63,7 +66,7 @@ class vkMusicDownloader():
         except KeyboardInterrupt:
             print('Вы завершили выполнение программы.')
 
-    def main(self, auth_dialog = 'yes'):
+    def main(self, auth_dialog = 'yes', user_id = None):
         try:
             if (not os.path.exists(self.CONFIG_DIR)):
                 os.mkdir(self.CONFIG_DIR)
@@ -72,15 +75,15 @@ class vkMusicDownloader():
             
             if (auth_dialog == 'yes') :
                 auth_dialog = str(input("Авторизоваться заново? yes/no\n> "))
-                if (auth_dialog == "yes"):
-                    self.auth(new=True)
+                if (auth_dialog == 'yes'):
+                    self.auth(new = True, user_id = user_id)
                 elif (auth_dialog == "no"):
-                    self.auth(new=False)
+                    self.auth(new = False, user_id = user_id)
                 else:
                     print('Ошибка, неверный ответ.')
                     self.main()
-            elif (auth_dialog == 'no') :
-                self.auth(new=False)
+            elif (auth_dialog == "no") :
+                self.auth(new = False, user_id = user_id)
             
             print('Подготовка к скачиванию...')
             
@@ -159,19 +162,27 @@ if __name__ == '__main__':
     vkMD = vkMusicDownloader()
 
     try:
-        opts, args = getopt.getopt(sys.argv, "hn")
+        opts, args = getopt.getopt(sys.argv[1:], "hni:")
     except getopt.GetoptError:
-        print('./main.py [-n] [-h]')
+        print('./main.py [-n] [-h] [-i]')
         sys.exit(2)
     
+    auth_dialog = 'yes'
+    user_id = None
+    
     if len(args) == 1 :
-        vkMD.main(auth_dialog = 'yes')
+        vkMD.main(auth_dialog = auth_dialog)
     else :
-        for arg in args:    
-            if arg == '-h':
+        for opt, arg in opts:
+            if opt in ['-h']:
                 print('./main.py [-n] [-h]')
                 sys.exit()
-            elif arg == '-n':
-                vkMD.main(auth_dialog = 'no')
-
-
+            elif opt in ['-n']:
+                auth_dialog = 'no'
+            elif opt in ['-i']:
+                user_id = int(arg)
+        
+        try:
+            vkMD.main(auth_dialog = auth_dialog, user_id = user_id)
+        except vk_api.exceptions.AccessDenied as e:
+            print('[error]:', e)
