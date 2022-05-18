@@ -4,10 +4,13 @@
 import re
 import os
 import sys
+import pymp
+import vk_api
 import getopt
 import pickle
+import multiprocessing
+
 from time import time
-import vk_api
 from vk_api import audio
 
 class vkMusicDownloader():
@@ -135,21 +138,21 @@ class vkMusicDownloader():
                     
                 os.chdir(album_path) #меняем текущую директорию
                 
-                for j in audio:
-                    fileMP3 = "{} - {}.mp3".format(j["artist"], j["title"])
-                    fileMP3 = re.sub('/', '_', fileMP3)
-                    try:
-                        if os.path.isfile(fileMP3) :
-                            print("{} Уже скачен: {}.".format(index, fileMP3))
-                        else :
-                            print("{} Скачивается: {}.".format(index, fileMP3), end = "")
+                with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
+                    for index in pmp.range(0, len(audio)):
+                        j = audio[index]
+                        fileMP3 = "{} - {}.mp3".format(j["artist"], j["title"])
+                        fileMP3 = re.sub('/', '_', fileMP3)
+                        try:
+                            if os.path.isfile(fileMP3) :
+                                print("{} Уже скачен: {}.".format(index, fileMP3))
+                            else :
+                                print("{} Скачивается: {}.".format(index, fileMP3), end = "")
                             
-                            os.system("ffmpeg -i {} -c copy -map a \"{}\"".format(audio[index-1]['url'], fileMP3))
-                    except OSError:
-                        if not os.path.isfile(fileMP3) :
-                            print("{} Не удалось скачать аудиозапись: {}".format(index, fileMP3))
-                
-                    index += 1
+                                os.system("ffmpeg -i {} -c copy -map a \"{}\"".format(audio[index-1]['url'], fileMP3))
+                        except OSError:
+                            if not os.path.isfile(fileMP3) :
+                                print("{} Не удалось скачать аудиозапись: {}".format(index, fileMP3))
                 
                 os.chdir("../../..")
                 
@@ -185,4 +188,6 @@ if __name__ == '__main__':
         try:
             vkMD.main(auth_dialog = auth_dialog, user_id = user_id)
         except vk_api.exceptions.AccessDenied as e:
+            print('[error]:', e)
+        except Exception as e:
             print('[error]:', e)
