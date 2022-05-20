@@ -72,12 +72,12 @@ class vkMusicDownloader():
     
     def audio_get(self, audio):
         # собственно циклом загружаем нашу музыку 
-        #with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
-        #    for index in pmp.range(0, len(audio)):
-        #        self.audio_download(index, audio[index])
+        with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
+            for index in pmp.range(0, len(audio)):
+                self.audio_download(index, audio[index])
             
-        for index in range(len(audio)) :
-            self.audio_download(index, audio[index])
+        #for index in range(len(audio)) :
+        #    self.audio_download(index, audio[index])
     
     def audio_download(self, index, audio):
         
@@ -136,7 +136,7 @@ class vkMusicDownloader():
             if not os.path.exists(music_path):
                 os.makedirs(music_path)
             
-            index = 1
+            count = 0
             time_start = time() # сохраняем время начала скачивания
             print("Скачивание началось...\n")
             
@@ -146,13 +146,14 @@ class vkMusicDownloader():
             
             # Получаем музыку.
             self.audio_get(audio)
+            count += len(audio)
                 
             os.chdir("../..")
             albums = self.vk_audio.get_albums(owner_id=self.user_id)
             print('У Вас {} альбома.'.format(len(albums)))
             for i in albums:
-                index = 1
                 audio = self.vk_audio.get(owner_id=self.user_id, album_id=i['id'])
+                count += len(audio)
                 
                 print('Будет скачано: {} аудиозаписей из альбома {}.'.format(len(audio), i['title']))
                 
@@ -167,9 +168,11 @@ class vkMusicDownloader():
                 self.audio_get(audio)
                 
                 os.chdir("../../..")
-                
+            
+            os.system('tset')
+            
             time_finish = time()
-            print("" + str(len(audio)) + " аудиозаписей скачано за: " + str(time_finish - time_start) + " сек.")
+            print("" + str(count) + " аудиозаписей скачано за: " + str(time_finish - time_start) + " сек.")
         except KeyboardInterrupt:
             print('Вы завершили выполнение программы.')
             
