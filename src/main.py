@@ -5,6 +5,7 @@ import re
 import os
 import sys
 import pymp
+import ffmpeg
 import vk_api
 import getopt
 import pickle
@@ -68,7 +69,46 @@ class vkMusicDownloader():
             self.vk_audio = audio.VkAudio(vk_session)
         except KeyboardInterrupt:
             print('Вы завершили выполнение программы.')
+    
+    def audio_get(self, audio):
+        # собственно циклом загружаем нашу музыку 
+        #with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
+        #    for index in pmp.range(0, len(audio)):
+        #        self.audio_download(index, audio[index])
+            
+        for index in range(len(audio)) :
+            self.audio_download(index, audio[index])
+    
+    def audio_download(self, index, audio):
+        
+        title = audio["title"]
 
+        # Защита от длинного имени
+        if len(title) > 100:
+            title = title[:100]
+        
+        # Защита от недопустимых символов
+        title = "".join([c for c in title if c.isalpha() or c.isdigit() or c == ' ']).rstrip()
+        
+        fileMP3 = "{} - {}.mp3".format(audio["artist"], title)
+        fileMP3 = re.sub('/', '_', fileMP3)
+                        
+        try:
+            if os.path.isfile(fileMP3) :
+                print("{} Уже скачен: {}.".format(index, fileMP3))
+            else :
+                print("{} Скачивается: {}.".format(index, fileMP3), end = "")
+                            
+                #stream = ffmpeg.input(audio['url'])
+                #stream = ffmpeg.hflip(stream)
+                #stream = ffmpeg.output(stream, fileMP3)
+                #ffmpeg.run(stream)
+                            
+                os.system("ffmpeg -i {} -c copy -map a \"{}\"".format(audio['url'], fileMP3))
+        except OSError:
+            if not os.path.isfile(fileMP3) :
+                print("{} Не удалось скачать аудиозапись: {}".format(index, fileMP3))
+        
     def main(self, auth_dialog = 'yes', user_id = None):
         try:
             if (not os.path.exists(self.CONFIG_DIR)):
@@ -104,24 +144,9 @@ class vkMusicDownloader():
             audio = self.vk_audio.get(owner_id=self.user_id)
             print('Будет скачано: {} аудиозаписей с Вашей страницы.'.format(len(audio)))
             
-            # собственно циклом загружаем нашу музыку 
-            for i in audio:
-                fileMP3 = "{} - {}.mp3".format(i["artist"], i["title"])
-                fileMP3 = re.sub('/', '_', fileMP3)
+            # Получаем музыку.
+            self.audio_get(audio)
                 
-                try:
-                    if os.path.isfile(fileMP3) :
-                        print("{} Уже скачен: {}.".format(index, fileMP3))
-                    else :
-                        print("{} Скачивается: {}.".format(index, fileMP3), end = "\n")
-                    
-                        os.system("ffmpeg -i {} -c copy -map a \"{}\"".format(audio[index-1]['url'], fileMP3))
-                except OSError:
-                    if not os.path.isfile(fileMP3) :
-                        print("{} Не удалось скачать аудиозапись: {}".format(index, fileMP3))
-
-                index += 1
-            
             os.chdir("../..")
             albums = self.vk_audio.get_albums(owner_id=self.user_id)
             print('У Вас {} альбома.'.format(len(albums)))
@@ -138,21 +163,8 @@ class vkMusicDownloader():
                     
                 os.chdir(album_path) #меняем текущую директорию
                 
-                with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
-                    for index in pmp.range(0, len(audio)):
-                        j = audio[index]
-                        fileMP3 = "{} - {}.mp3".format(j["artist"], j["title"])
-                        fileMP3 = re.sub('/', '_', fileMP3)
-                        try:
-                            if os.path.isfile(fileMP3) :
-                                print("{} Уже скачен: {}.".format(index, fileMP3))
-                            else :
-                                print("{} Скачивается: {}.".format(index, fileMP3), end = "")
-                            
-                                os.system("ffmpeg -i {} -c copy -map a \"{}\"".format(audio[index-1]['url'], fileMP3))
-                        except OSError:
-                            if not os.path.isfile(fileMP3) :
-                                print("{} Не удалось скачать аудиозапись: {}".format(index, fileMP3))
+                # Получаем музыку.
+                self.audio_get(audio)
                 
                 os.chdir("../../..")
                 
@@ -160,7 +172,7 @@ class vkMusicDownloader():
             print("" + str(len(audio)) + " аудиозаписей скачано за: " + str(time_finish - time_start) + " сек.")
         except KeyboardInterrupt:
             print('Вы завершили выполнение программы.')
-
+            
 if __name__ == '__main__':
     vkMD = vkMusicDownloader()
 
@@ -191,3 +203,5 @@ if __name__ == '__main__':
             print('[error]:', e)
         except Exception as e:
             print('[error]:', e)
+
+    sys.exit()
