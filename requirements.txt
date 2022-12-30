@@ -1,5 +1,4 @@
 requests>=2.18.4
 vk_api>=11.9.7
 BeautifulSoup4>=4.9.3
-ffmpeg-python>=0.2.0
 pymp-pypi>=0.0.5

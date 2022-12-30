@@ -5,7 +5,6 @@ import re
 import os
 import sys
 import pymp
-import ffmpeg
 import vk_api
 import getopt
 import pickle
@@ -98,12 +97,7 @@ class vkMusicDownloader():
                 print("{} Уже скачен: {}.".format(index, fileMP3))
             else :
                 print("{} Скачивается: {}.".format(index, fileMP3), end = "")
-                            
-                #stream = ffmpeg.input(audio['url'])
-                #stream = ffmpeg.hflip(stream)
-                #stream = ffmpeg.output(stream, fileMP3)
-                #ffmpeg.run(stream)
-                            
+                                                        
                 os.system("ffmpeg -i {} -c copy -map a \"{}\"".format(audio['url'], fileMP3))
         except OSError:
             if not os.path.isfile(fileMP3) :
