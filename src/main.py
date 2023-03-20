@@ -69,14 +69,16 @@ class vkMusicDownloader():
         except KeyboardInterrupt:
             print('Вы завершили выполнение программы.')
     
-    def audio_get(self, audio):
+    def audio_get(self, audio, parralel = True):
         # собственно циклом загружаем нашу музыку 
-        with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
-            for index in pmp.range(0, len(audio)):
+        
+        if (parralel) :
+            with pymp.Parallel(multiprocessing.cpu_count()) as pmp:
+                for index in pmp.range(0, len(audio)):
+                    self.audio_download(index, audio[index])
+        else :
+            for index in range(len(audio)) :
                 self.audio_download(index, audio[index])
-            
-        #for index in range(len(audio)) :
-        #    self.audio_download(index, audio[index])
     
     def audio_download(self, index, audio):
         
@@ -96,14 +98,15 @@ class vkMusicDownloader():
             if os.path.isfile(fileMP3) :
                 print("{} Уже скачен: {}.".format(index, fileMP3))
             else :
-                print("{} Скачивается: {}.".format(index, fileMP3), end = "")
-                                                        
+                #print("{} Скачивается: {}.".format(index, fileMP3), end = "")
+                print("{} Скачивается: {}.".format(index, fileMP3))
+                                                    
                 os.system("ffmpeg -i {} -c copy -map a \"{}\"".format(audio['url'], fileMP3))
         except OSError:
             if not os.path.isfile(fileMP3) :
                 print("{} Не удалось скачать аудиозапись: {}".format(index, fileMP3))
         
-    def main(self, auth_dialog = 'yes', user_id = None):
+    def main(self, auth_dialog = 'yes', user_id = None, parralel_flag = True):
         try:
             if (not os.path.exists(self.CONFIG_DIR)):
                 os.mkdir(self.CONFIG_DIR)
@@ -139,7 +142,7 @@ class vkMusicDownloader():
             print('Будет скачано: {} аудиозаписей с Вашей страницы.'.format(len(audio)))
             
             # Получаем музыку.
-            self.audio_get(audio)
+            self.audio_get(audio, parralel_flag)
             count += len(audio)
                 
             os.chdir("../..")
@@ -159,7 +162,7 @@ class vkMusicDownloader():
                 os.chdir(album_path) #меняем текущую директорию
                 
                 # Получаем музыку.
-                self.audio_get(audio)
+                self.audio_get(audio, parralel_flag)
                 
                 os.chdir("../../..")
             
@@ -174,13 +177,14 @@ if __name__ == '__main__':
     vkMD = vkMusicDownloader()
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hni:")
+        opts, args = getopt.getopt(sys.argv[1:], "hni:p")
     except getopt.GetoptError:
-        print('./main.py [-n] [-h] [-i]')
+        print('./main.py [-n] [-h] [-i] [-p]')
         sys.exit(2)
     
     auth_dialog = 'yes'
     user_id = None
+    parralel_flag = True
     
     if len(args) == 1 :
         vkMD.main(auth_dialog = auth_dialog)
@@ -193,9 +197,11 @@ if __name__ == '__main__':
                 auth_dialog = 'no'
             elif opt in ['-i']:
                 user_id = int(arg)
+            elif opt in ['-p']:
+                parralel_flag = False
         
         try:
-            vkMD.main(auth_dialog = auth_dialog, user_id = user_id)
+            vkMD.main(auth_dialog = auth_dialog, user_id = user_id, parralel_flag = parralel_flag)
         except vk_api.exceptions.AccessDenied as e:
             print('[error]:', e)
         except Exception as e:
