@@ -57,12 +57,13 @@ class vkMusicDownloader():
             with open(self.USERDATA_FILE, 'wb') as dataFile:
                 pickle.dump(SaveData, dataFile)
 
-            vk_session = vk_api.VkApi(login=self.login, password=self.password)
             try:
+                vk_session = vk_api.VkApi(login=self.login, password=self.password, app_id=2685278)
                 vk_session.auth()
-            except:
-                vk_session = vk_api.VkApi(login=self.login, password=self.password, auth_handler=self.auth_handler)
-                vk_session.auth()
+            except Exception as e:
+                print('[error]:', e)
+                return
+                
             print('Вы успешно авторизовались.')
             self.vk = vk_session.get_api()
             self.vk_audio = audio.VkAudio(vk_session)
