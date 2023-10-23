@@ -102,7 +102,7 @@ class vkMusicDownloader():
                 #print("{} Скачивается: {}.".format(index, fileMP3), end = "")
                 print("{} Скачивается: {}.".format(index, fileMP3))
                                                     
-                os.system("ffmpeg -i {} -c copy -map a \"{}\"".format(audio['url'], fileMP3))
+                os.system("ffmpeg -http_persistent false -i {} -c copy -map a \"{}\"".format(audio['url'], fileMP3))
         except OSError:
             if not os.path.isfile(fileMP3) :
                 print("{} Не удалось скачать аудиозапись: {}".format(index, fileMP3))
