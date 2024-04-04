@@ -1,4 +1,4 @@
 requests>=2.18.4
-vk_api>=11.9.7
+vk_api @ git+https://github.com/M1h4n1k/vk_api_fix_auth.git
 BeautifulSoup4>=4.9.3
 pymp-pypi>=0.0.5
